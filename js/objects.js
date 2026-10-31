@@ -90,8 +90,8 @@ function badge(K) {
   holder.position.set(0, 0.04, 0);
   holder.add(card);
   g.add(holder);
-  // The lanyard loops off behind the card.
-  const strap = [[0, 0.05, -1.2], [-0.5, 0.05, -1.9], [-1.4, 0.05, -2.3], [-2.2, 0.05, -1.6], [-2.1, 0.05, -0.4], [-1.3, 0.05, 0.3], [-0.6, 0.05, -0.5], [0, 0.05, -1.2]].map(v => new THREE.Vector3(...v));
+  // The lanyard loops off behind the card, never under it, and stays on the bench.
+  const strap = [[0, -1.2], [0.45, -1.65], [0.15, -2.3], [-0.8, -2.55], [-1.65, -2.0], [-1.85, -0.8], [-1.45, 0.1], [-1.05, -0.5], [-0.92, -1.25], [-0.45, -1.5], [0, -1.2]].map(([x, z]) => new THREE.Vector3(x, 0.05, z));
   const lan = K.tube(strap, 0.06, '#3f6fb0', 120);
   lan.scale.y = 0.5;
   g.add(lan);
