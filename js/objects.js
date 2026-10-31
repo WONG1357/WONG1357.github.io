@@ -245,7 +245,7 @@ function notebook(K) {
   pb.rotation.x = Math.PI / 2; pb.position.set(1.2, -0.004, 0);
   hinge.add(pf, pb);
   g.add(hinge);
-  g.add(K.cyl(0.05, 0.05, 2.8, 8, '#3a3f49', 2.6, 0.12, 1.0).rotateZ(Math.PI / 2).rotateY(0.6));
+  g.add(K.cyl(0.05, 0.05, 2.2, 8, '#3a3f49', 2.72, 0.05, 0.2).rotateX(Math.PI / 2).rotateZ(0.08));
   g.rotation.y = 0.12;
   return {
     group: g, view: { dir: new THREE.Vector3(0, 1.8, 0.8), dist: 6.4, lift: 0 },
@@ -349,7 +349,7 @@ function binder(K) {
     }
   });
   const sheet = K.plane(1.7, 2.2, '#ffffff', { map: mark.tex, mapColour: 0.5 });
-  sheet.rotation.x = -Math.PI / 2; sheet.rotation.z = 0.25; sheet.position.set(-1.5, 0.02, 1.3);
+  sheet.rotation.x = -Math.PI / 2; sheet.rotation.z = 0.25; sheet.position.set(-1.65, 0.02, 1.45);
   g.add(sheet);
   const stamp = new THREE.Group();
   stamp.add(K.box(0.9, 0.25, 0.55, '#7a5a3c', 0, 0.12, 0, 0.04));
@@ -445,7 +445,7 @@ function eeg(K) {
   const stopLab = canvasTex(256, 64, (x, w, h) => { x.fillStyle = '#f1c24c'; x.fillRect(0, 0, w, h); x.fillStyle = inkCss; x.font = `700 40px ${SANS}`; x.textAlign = 'center'; x.fillText('STOP', w / 2, 46); });
   const sl = K.plane(0.8, 0.2, '#ffffff', { map: stopLab.tex, mapColour: 1 }); sl.position.set(0, 0.25, 0.46);
   bell.add(sl);
-  bell.position.set(0.5, 0, 0.7);
+  bell.position.set(0.2, 0, 0.7);
   g.add(bell);
   // Card reader with a transport card.
   const reader = new THREE.Group();
@@ -456,7 +456,7 @@ function eeg(K) {
   const card = K.box(0.85, 0.03, 0.55, '#e2a24c', 0.1, 0.33, 0.05, 0.03);
   card.rotation.y = 0.3;
   reader.add(card);
-  reader.position.set(1.8, 0, 0.4);
+  reader.position.set(1.4, 0, 0.4);
   g.add(reader);
   // ERP strip: a paper tape that draws the brain response.
   let drawn = 0;
@@ -473,8 +473,8 @@ function eeg(K) {
     }
     x.stroke();
   });
-  const strip = K.plane(3.6, 0.63, '#ffffff', { map: tape.tex, mapColour: 1 });
-  strip.rotation.x = -Math.PI / 2; strip.position.set(0.6, 0.02, 1.75); strip.rotation.z = -0.04;
+  const strip = K.plane(3.2, 0.56, '#ffffff', { map: tape.tex, mapColour: 1 });
+  strip.rotation.x = -Math.PI / 2; strip.position.set(0.3, 0.02, 1.75); strip.rotation.z = -0.04;
   g.add(strip);
   const st = { d: 0 };
   return {
@@ -554,9 +554,9 @@ function walker(K) {
       const tl = gsap.timeline({ paused: true, onStart: () => { w.position.set(0, 0, 0); sheet.scale.y = 1; } });
       tl.to(sheet.scale, { y: 0.05, duration: 0.25, ease: 'power2.in' }, 0)
         .to(sheet.scale, { y: 1, duration: 0.7, ease: 'bounce.out' })
-        .to(w.position, { x: 0.9, z: 0.6, duration: 1.4, ease: 'power1.inOut' }, 0.3)
+        .to(w.position, { z: 0.55, duration: 1.4, ease: 'power1.inOut' }, 0.3)
         .to(wheels.map(wh => wh.rotation), { x: -6, duration: 1.4, ease: 'power1.inOut' }, 0.3)
-        .to(w.position, { x: 0, z: 0, duration: 1.2, ease: 'power1.inOut' }, '+=0.4')
+        .to(w.position, { z: 0, duration: 1.2, ease: 'power1.inOut' }, '+=0.4')
         .to(wheels.map(wh => wh.rotation), { x: 0, duration: 1.2, ease: 'power1.inOut' }, '<');
       return tl;
     },
@@ -571,7 +571,7 @@ const LAYOUT = [
   [eye, 6.2, -2.5, -0.3],
   [binder, 7.0, 1.0, 0],
   [laptop, -4.5, -1.6, 0],
-  [eeg, -2.6, 1.6, 0.1],
+  [eeg, -3.0, 1.6, 0.1],
   [walker, 3.6, -2.2, 0],
 ];
 
