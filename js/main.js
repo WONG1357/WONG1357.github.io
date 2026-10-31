@@ -101,7 +101,37 @@ function showCard(f) {
   c.hidden = false;
   c.classList.remove('in'); void c.offsetWidth; c.classList.add('in');
   c.scrollTop = 0;
+  placeCard();
 }
+
+// The card can be dragged aside by its top strip; a double-click puts it back.
+// Its offset is kept from figure to figure, and at least its strip always stays on screen.
+const card = $('card'), grip = $('card-grip');
+const drag = { x: 0, y: 0 };
+function placeCard() {
+  card.style.translate = '';
+  const r = card.getBoundingClientRect();
+  drag.x = Math.min(Math.max(drag.x, 90 - r.right), innerWidth - 90 - r.left);
+  drag.y = Math.min(Math.max(drag.y, 12 - r.top), innerHeight - 44 - r.top);
+  card.style.translate = `${drag.x}px ${drag.y}px`;
+}
+grip.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  grip.setPointerCapture(e.pointerId);
+  const sx = e.clientX - drag.x, sy = e.clientY - drag.y;
+  card.classList.add('dragging');
+  const move = ev => { drag.x = ev.clientX - sx; drag.y = ev.clientY - sy; placeCard(); };
+  const end = () => {
+    card.classList.remove('dragging');
+    grip.removeEventListener('pointermove', move);
+    grip.removeEventListener('pointerup', end);
+    grip.removeEventListener('pointercancel', end);
+  };
+  grip.addEventListener('pointermove', move);
+  grip.addEventListener('pointerup', end);
+  grip.addEventListener('pointercancel', end);
+});
+grip.addEventListener('dblclick', () => { drag.x = drag.y = 0; placeCard(); });
 
 // Leaving a figure plays its moment backwards, so the bench always returns to its rest state.
 function rest(f) { if (f && f.tl) f.tl.timeScale(reduced ? 100 : 2.5).reverse(); }
@@ -204,6 +234,7 @@ canvas.addEventListener('pointerleave', () => { if (!state.focus) setHover(null)
 const label = $('label');
 const top = new THREE.Vector3();
 let shift = 0;
+const off = { x: 0, y: 0 };
 function resize() {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false);
@@ -211,6 +242,7 @@ function resize() {
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   if (!state.focus) overview();
+  if (!card.hidden) placeCard();
 }
 addEventListener('resize', resize);
 resize();
@@ -234,15 +266,23 @@ renderer.setAnimationLoop(() => {
   par.y += (mouse.y * pw - par.y) * k;
   camera.position.copy(cam.pos).add(new THREE.Vector3(par.x * 0.9, -par.y * 0.5, 0));
   camera.lookAt(cam.look);
-  // Slide the view so the open figure sits beside the card.
-  const want = state.focus && !$('card').hidden ? 1 : 0;
-  shift += (want - shift) * Math.min(dt * 4, 1);
+  // Slide the view so the open figure sits in the space the card leaves free, wherever it was dragged.
+  const want = state.focus && !card.hidden;
+  const ease = Math.min(dt * 4, 1);
+  shift += ((want ? 1 : 0) - shift) * ease;
   const w = innerWidth, h = innerHeight;
+  let tx = 0, ty = 0;
+  if (want) {
+    const r = card.getBoundingClientRect();
+    if (phone) ty = Math.min(Math.max(0, h - r.top) * 0.45, h * 0.4);
+    else tx = 1.1 * (r.left + r.width / 2 > w / 2 ? w / 2 - Math.max(r.left, 0) / 2 : w / 2 - (Math.min(r.right, w) + w) / 2);
+  }
+  off.x += (tx - off.x) * ease;
+  off.y += (ty - off.y) * ease;
   // In the overview, lift the bench clear of the footer strip.
   const foot = document.querySelector('.bottom').offsetHeight;
   const up = phone ? 0 : (1 - shift) * foot * 0.45;
-  if (phone) camera.setViewOffset(w, h, 0, h * 0.26 * shift + up, w, h);
-  else camera.setViewOffset(w, h, w * 0.18 * shift, up, w, h);
+  camera.setViewOffset(w, h, off.x, off.y + up, w, h);
   if (hover) {
     box.setFromObject(hover === 'about' ? board : hover.group);
     top.set((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2).project(camera);

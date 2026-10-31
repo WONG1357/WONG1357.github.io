@@ -95,10 +95,22 @@ function badge(K) {
   const lan = K.tube(strap, 0.06, '#3f6fb0', 120);
   lan.scale.y = 0.5;
   g.add(lan);
+  // Both ends of the strap are clipped to the card, so when the card lifts the strap rises
+  // with it, most at the clip and fading out along the loop.
+  const pull = strap.map(v => Math.max(0, 1 - v.distanceTo(strap[0]) / 1.6) ** 1.5);
+  const follow = () => {
+    const lift = (holder.position.y - 0.04) / lan.scale.y;
+    const pts = strap.map((v, i) => v.clone().setY(v.y + lift * pull[i]));
+    lan.geometry.dispose();
+    lan.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 120, 0.06, 8);
+    // The curve can swing below the bench between a raised point and a resting one; keep it on top.
+    const pos = lan.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) pos.setY(i, Math.max(pos.getY(i), 0.02));
+  };
   return {
     group: g, view: { dir: new THREE.Vector3(0.1, 1.5, 0.75), dist: 6.2, lift: 0.6 },
     play() {
-      return gsap.timeline({ paused: true })
+      return gsap.timeline({ paused: true, onUpdate: follow })
         .to(holder.position, { y: 0.9, duration: 0.45, ease: 'power2.out' })
         .to(holder.rotation, { z: Math.PI, duration: 0.9, ease: 'power2.inOut' }, '-=0.1')
         .to(holder.position, { y: 0.07, duration: 0.45, ease: 'bounce.out' });

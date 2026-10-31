@@ -50,7 +50,11 @@ body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var
 .label .name { font-family: var(--serif); font-size: 22px; line-height: 1; white-space: nowrap; background: rgba(251, 248, 240, .85); padding: 2px 4px 3px 0; }
 
 /* Figure card: a ruled sheet on the right. */
-.card { position: fixed; right: 30px; top: 84px; width: min(440px, calc(100% - 60px)); max-height: calc(100% - 84px - var(--foot, 118px)); overflow: auto; z-index: 6; padding: 24px 26px 0; background: var(--paper-hi); border: 1.5px solid var(--ink); box-shadow: 8px 8px 0 rgba(29, 35, 51, .12); }
+.card { position: fixed; right: 30px; top: 84px; width: min(440px, calc(100% - 60px)); max-height: calc(100% - 84px - var(--foot, 118px)); overflow: auto; z-index: 6; padding: 0 26px; background: var(--paper-hi); border: 1.5px solid var(--ink); box-shadow: 8px 8px 0 rgba(29, 35, 51, .12); }
+.card-grip { position: sticky; top: 0; z-index: 1; margin: 0 -26px 16px; padding: 8px 26px 7px; background: var(--paper-hi); border-bottom: 1px dashed var(--rule); cursor: grab; touch-action: none; user-select: none; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.card-grip:hover { color: var(--ink); background: #f3eee2; }
+.card.dragging { box-shadow: 14px 16px 0 rgba(29, 35, 51, .16); }
+.card.dragging .card-grip { cursor: grabbing; }
 .card.in { animation: draw .6s cubic-bezier(.2, .8, .2, 1); }
 @keyframes draw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
 .card h2 { margin: 8px 0 4px; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.02; text-wrap: balance; }
@@ -104,8 +108,9 @@ body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var
   .title-block h1 { font-size: 21px; }
   .inventor { font-size: 12px; }
   .figs { margin-top: 6px; justify-items: start; }
-  .card { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; max-height: 58%; z-index: 7; padding: 18px 18px 0; }
+  .card { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; max-height: 58%; z-index: 7; padding: 0 18px; }
   .card h2 { font-size: 28px; }
+  .card-grip { margin: 0 -18px 12px; padding: 9px 18px 8px; }
   .index { display: none; }
   .label .name { font-size: 18px; }
   .cv-sheet { padding: 28px 20px 28px; }
