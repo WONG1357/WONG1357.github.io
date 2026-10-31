@@ -1,4 +1,4 @@
-// Generated from v4/content.json in bench order. Beihang camp is left out on purpose.
+// Generated from v4/content.json in bench order.
 export const CV = {
  "profile": {
   "name": "Wong Yi Chun Thomas",
