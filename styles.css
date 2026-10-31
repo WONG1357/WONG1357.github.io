@@ -1,0 +1,116 @@
+/* A patent sheet: cream paper, blue-black ink, one red for marks. UI is lettering and ruled boxes on the sheet. */
+:root {
+  --paper: #f4efe2;
+  --paper-hi: #fbf8f0;
+  --ink: #1d2333;
+  --ink-soft: #565c6b;
+  --rule: rgba(29, 35, 51, .28);
+  --red: #c23a30;
+  --serif: "Instrument Serif", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --pad: max(16px, env(safe-area-inset-left, 0px));
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: default; }
+#scene.pointing { cursor: pointer; }
+.loading { position: fixed; left: 0; right: 0; top: 42%; margin: 0; text-align: center; font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft, #565c6b); transition: opacity .5s; }
+.loading.done { opacity: 0; pointer-events: none; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+/* The sheet border, like a drawing frame. */
+body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var(--ink); pointer-events: none; z-index: 3; }
+
+.top { position: fixed; top: 22px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 5; pointer-events: none; }
+.top > * { pointer-events: auto; }
+.brand { text-decoration: none; display: grid; gap: 2px; }
+.brand span { font-family: var(--serif); font-size: 30px; line-height: 1; }
+.brand small { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.nav { display: flex; border: 1.5px solid var(--ink); background: var(--paper-hi); }
+.nav a, .nav button { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 9px 14px; text-decoration: none; background: none; border: 0; cursor: pointer; }
+.nav > * + * { border-left: 1.5px solid var(--ink); }
+.nav .on { background: var(--ink); color: var(--paper-hi); }
+.nav a:hover:not(.on), .nav button:hover { background: #e9e2d0; }
+
+/* Footer strip, like the title block along the bottom of a patent sheet. */
+.title-block { min-width: 0; }
+.kicker { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--red); }
+.title-block h1 { margin: 4px 0 4px; font-family: var(--serif); font-weight: 400; font-size: clamp(22px, 2.1vw, 30px); line-height: 1.05; text-wrap: balance; }
+.inventor { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.inventor b { color: var(--ink); font-weight: 600; }
+
+/* Hover callout: "FIG. 2" in mono with a leader rule. */
+.label { position: fixed; left: 0; top: 0; z-index: 4; margin: 0; pointer-events: none; display: grid; gap: 2px; padding: 0 0 6px 12px; border-left: 1.5px solid var(--ink); transform: translate(-9999px, 0); }
+.label .fig { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; color: var(--red); }
+.label .name { font-family: var(--serif); font-size: 22px; line-height: 1; white-space: nowrap; background: rgba(251, 248, 240, .85); padding: 2px 4px 3px 0; }
+
+/* Figure card: a ruled sheet on the right. */
+.card { position: fixed; right: 30px; top: 84px; width: min(440px, calc(100% - 60px)); max-height: calc(100% - 84px - var(--foot, 118px)); overflow: auto; z-index: 6; padding: 24px 26px 0; background: var(--paper-hi); border: 1.5px solid var(--ink); box-shadow: 8px 8px 0 rgba(29, 35, 51, .12); }
+.card.in { animation: draw .6s cubic-bezier(.2, .8, .2, 1); }
+@keyframes draw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+.card h2 { margin: 8px 0 4px; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.02; text-wrap: balance; }
+.org { margin: 0; font-size: 15px; font-weight: 500; }
+.dates { margin: 4px 0 0; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+.bullets { margin: 16px 0 0; padding: 14px 0 0 18px; border-top: 1px solid var(--rule); font-size: 14.5px; line-height: 1.55; }
+.bullets li + li { margin-top: 8px; }
+.bullets li::marker { content: "— "; color: var(--red); }
+.tags { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tags li { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border: 1px solid var(--ink); }
+.card-actions { position: sticky; bottom: 0; display: flex; gap: 8px; margin-top: 20px; padding: 14px 0 22px; background: var(--paper-hi); border-top: 1px solid var(--rule); }
+.btn { flex: 1; padding: 11px 12px; border: 1.5px solid var(--ink); background: var(--paper-hi); cursor: pointer; font-family: var(--mono); font-size: 12.5px; letter-spacing: .04em; }
+.btn:hover { background: #e9e2d0; }
+.btn-ink { background: var(--ink); color: var(--paper-hi); }
+.btn-ink:hover { background: #000; }
+
+/* Bottom strip: title on the left, the figure index on the right. */
+.bottom { position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 5; display: flex; align-items: center; gap: 24px; padding: 14px 20px 16px; background: var(--paper-hi); border-top: 1.5px solid var(--ink); }
+.figs { margin-left: auto; display: grid; gap: 8px; justify-items: end; }
+.count { margin: 0; font-family: var(--mono); font-size: 11.5px; white-space: nowrap; color: var(--ink-soft); }
+.count span { color: var(--red); }
+.index { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, auto); gap: 4px; }
+.index button { width: 100%; text-align: left; font-family: var(--mono); font-size: 11px; padding: 5px 8px; border: 1px solid var(--rule); background: var(--paper-hi); cursor: pointer; white-space: nowrap; }
+.index button:hover, .index button.hot { border-color: var(--ink); }
+.index li.done button { border-color: var(--ink); background: var(--ink); color: var(--paper-hi); }
+
+/* Plain CV */
+.cv { width: min(760px, calc(100% - 24px)); max-height: calc(100% - 40px); padding: 0; border: 1.5px solid var(--ink); background: var(--paper-hi); color: var(--ink); }
+.cv::backdrop { background: rgba(29, 35, 51, .45); }
+.cv-sheet { padding: 40px 44px 44px; position: relative; }
+.cv-close { position: absolute; right: 18px; top: 18px; font-family: var(--mono); font-size: 12px; padding: 7px 12px; border: 1.5px solid var(--ink); background: none; cursor: pointer; }
+.cv h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 52px; line-height: 1; }
+.cv-sub { margin: 8px 0 0; font-size: 15px; }
+.cv-contact { margin: 6px 0 0; font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); }
+.cv h2 { margin: 30px 0 4px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--red); border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+.cv article { margin-top: 16px; }
+.cv-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.cv h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.cv .meta { margin: 0; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+.cv .org { font-size: 14px; font-weight: 400; color: var(--ink-soft); }
+.cv ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.55; }
+.noscript { position: fixed; inset: 40px; font-family: var(--mono); }
+
+@media (max-width: 720px), (max-width: 1100px) and (orientation: portrait) {
+  body::after { inset: 6px; }
+  .top { top: 16px; left: 18px; right: 18px; }
+  .brand span { font-size: 24px; }
+  .brand small { display: none; }
+  .nav a, .nav button { padding: 8px 10px; font-size: 11px; }
+  .bottom { left: 6px; right: 6px; bottom: 6px; padding: 10px 14px 12px; display: block; }
+  .title-block h1 { font-size: 21px; }
+  .inventor { font-size: 12px; }
+  .figs { margin-top: 6px; justify-items: start; }
+  .card { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; max-height: 58%; z-index: 7; padding: 18px 18px 0; }
+  .card h2 { font-size: 28px; }
+  .index { display: none; }
+  .label .name { font-size: 18px; }
+  .cv-sheet { padding: 28px 20px 28px; }
+  .cv h1 { font-size: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
