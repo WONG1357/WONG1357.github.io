@@ -23,8 +23,12 @@ a { color: inherit; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
 
-/* The sheet border, like a drawing frame. */
-body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var(--ink); pointer-events: none; z-index: 3; }
+/* The sheet border, like a drawing frame. It is ruled in on arrival. */
+.frame { position: fixed; left: 10px; top: 10px; width: calc(100% - 20px); height: calc(100% - 20px); pointer-events: none; z-index: 3; }
+.frame rect { fill: none; stroke: var(--ink); stroke-width: 3; stroke-dasharray: 1; }
+/* Until the arrival starts, everything drawn on the sheet waits (a fallback shows it if the script never runs). */
+.pre .top, .pre .bottom > *, .pre .frame, .pre .ftags { opacity: 0; animation: unhide .3s 8s forwards; }
+@keyframes unhide { to { opacity: 1; } }
 
 .top { position: fixed; top: 22px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 5; pointer-events: none; }
 .top > * { pointer-events: auto; }
@@ -44,19 +48,57 @@ body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var
 .inventor { margin: 0; font-size: 13px; color: var(--ink-soft); }
 .inventor b { color: var(--ink); font-weight: 600; }
 
-/* Hover callout: "FIG. 2" in mono with a leader rule. */
-.label { position: fixed; left: 0; top: 0; z-index: 4; margin: 0; pointer-events: none; display: grid; gap: 2px; padding: 0 0 6px 12px; border-left: 1.5px solid var(--ink); transform: translate(-9999px, 0); }
-.label .fig { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; color: var(--red); }
-.label .name { font-family: var(--serif); font-size: 22px; line-height: 1; white-space: nowrap; background: rgba(251, 248, 240, .85); padding: 2px 4px 3px 0; }
+/* "FIG. N" under each object in the overview. */
+.ftags { position: fixed; inset: 0; z-index: 2; pointer-events: none; transition: opacity .4s; }
+.ftags.off { opacity: 0; }
+.ftag { position: absolute; left: 0; top: 0; padding: 1px 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--red); white-space: nowrap; background: rgba(244, 239, 226, .8); transition: opacity .25s; }
+.ftag.hide { opacity: 0 !important; }
+
+/* Overlay for drawn dimensions (hover) and leader lines (open figure). Lines are ruled in with a dash. */
+.ov { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; overflow: visible; }
+.ov path { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .45s cubic-bezier(.5, 0, .2, 1); }
+.ov .on path, .ov path.on { stroke-dashoffset: 0; }
+.ov .arr { fill: var(--ink); stroke: none; opacity: 0; transition: opacity .2s .35s; }
+.ov .on .arr { opacity: 1; }
+.ov text { fill: var(--ink); paint-order: stroke; stroke: var(--paper-hi); stroke-width: 4px; stroke-linejoin: round; opacity: 0; transition: opacity .3s .25s; }
+.ov .on text { opacity: 1; }
+.ov .dt { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; }
+.ov .fg { font-family: var(--mono); font-size: 11.5px; letter-spacing: .14em; fill: var(--red); }
+.ov .nm { font-family: var(--serif); font-size: 23px; }
+.ov .dot { fill: var(--ink); stroke: none; opacity: 0; transition: opacity .2s; }
+.ov .dot.on { opacity: 1; }
+.ov .lead { stroke-width: .9; }
+
+/* Reference numerals on the open figure, like a patent drawing: number in red, then what the part is. */
+.callouts { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
+.co { position: absolute; left: 0; top: 0; margin: 0; width: 200px; font-size: 13px; line-height: 1.3; opacity: 0; transform: translateY(4px); transition: opacity .35s, transform .35s; }
+.co.on { opacity: 1; transform: none; }
+.co.L { text-align: right; }
+.co b { display: block; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .06em; color: var(--red); }
+.co span { padding: 0 3px; background: rgba(251, 248, 240, .85); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.callouts.num .co { width: auto; }
+.callouts.num .co span { display: none; }
 
 /* Figure card: a ruled sheet on the right. */
 .card { position: fixed; right: 30px; top: 84px; width: min(440px, calc(100% - 60px)); max-height: calc(100% - 84px - var(--foot, 118px)); overflow: auto; z-index: 6; padding: 0 26px; background: var(--paper-hi); border: 1.5px solid var(--ink); box-shadow: 8px 8px 0 rgba(29, 35, 51, .12); }
-.card-grip { position: sticky; top: 0; z-index: 1; margin: 0 -26px 16px; padding: 8px 26px 7px; background: var(--paper-hi); border-bottom: 1px dashed var(--rule); cursor: grab; touch-action: none; user-select: none; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.card-grip { position: sticky; top: 0; z-index: 1; margin: 0 -26px; padding: 8px 26px 7px; background: var(--paper-hi); border-bottom: 1px dashed var(--rule); cursor: grab; touch-action: none; user-select: none; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
 .card-grip:hover { color: var(--ink); background: #f3eee2; }
 .card.dragging { box-shadow: 14px 16px 0 rgba(29, 35, 51, .16); }
 .card.dragging .card-grip { cursor: grabbing; }
-.card.in { animation: draw .6s cubic-bezier(.2, .8, .2, 1); }
-@keyframes draw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+/* The card is a specification sheet: it unrolls from its top edge, the roll travelling down. */
+.spec { display: grid; grid-template-columns: 1.3fr 1fr 1.2fr; margin: 0 -26px 16px; border-bottom: 1.5px solid var(--ink); font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; }
+.spec span { padding: 7px 12px 6px; }
+.spec span + span { border-left: 1px solid var(--ink); }
+#spec-fig { color: var(--red); }
+.roll { position: absolute; left: 0; right: 0; top: 0; height: 16px; z-index: 2; pointer-events: none; opacity: 0; border-block: 1px solid var(--ink); background: linear-gradient(#cfc6b0, #fbf8f0 40%, #e6dfcd 75%, #bfb59c); }
+.card.in { animation: unroll .85s cubic-bezier(.45, 0, .2, 1) both; }
+.card.in .roll { animation: roll .85s cubic-bezier(.45, 0, .2, 1) both; }
+@keyframes unroll { from { clip-path: inset(0 0 calc(100% - 16px) 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes roll { 0% { top: 0; opacity: 1; } 90% { opacity: 1; } 100% { top: calc(100% - 16px); opacity: 0; } }
+.legend { display: none; list-style: none; margin: 16px 0 0; padding: 12px 0 0; border-top: 1px solid var(--rule); font-size: 13px; line-height: 1.45; columns: 2; column-gap: 18px; }
+.legend li { break-inside: avoid; margin-bottom: 4px; }
+.legend b { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--red); margin-right: 6px; }
+.card.numbered .legend { display: block; }
 .card h2 { margin: 8px 0 4px; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.02; text-wrap: balance; }
 .org { margin: 0; font-size: 15px; font-weight: 500; }
 .dates { margin: 4px 0 0; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
@@ -72,7 +114,8 @@ body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var
 .btn-ink:hover { background: #000; }
 
 /* Bottom strip: title on the left, the figure index on the right. */
-.bottom { position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 5; display: flex; align-items: center; gap: 24px; padding: 14px 20px 16px; background: var(--paper-hi); border-top: 1.5px solid var(--ink); }
+.bottom { position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 5; display: flex; align-items: center; gap: 24px; padding: 14px 20px 16px; background: var(--paper-hi); }
+.foot-rule { position: absolute; left: 0; right: 0; top: -1.5px; height: 1.5px; background: var(--ink); transform-origin: 0 50%; }
 .figs { margin-left: auto; display: grid; gap: 8px; justify-items: end; }
 .count { margin: 0; font-family: var(--mono); font-size: 11.5px; white-space: nowrap; color: var(--ink-soft); }
 .count span { color: var(--red); }
@@ -99,7 +142,7 @@ body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var
 .noscript { position: fixed; inset: 40px; font-family: var(--mono); }
 
 @media (max-width: 720px), (max-width: 1100px) and (orientation: portrait) {
-  body::after { inset: 6px; }
+  .frame { left: 6px; top: 6px; width: calc(100% - 12px); height: calc(100% - 12px); }
   .top { top: 16px; left: 18px; right: 18px; }
   .brand span { font-size: 24px; }
   .brand small { display: none; }
@@ -110,9 +153,12 @@ body::after { content: ""; position: fixed; inset: 10px; border: 1.5px solid var
   .figs { margin-top: 6px; justify-items: start; }
   .card { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; max-height: 58%; z-index: 7; padding: 0 18px; }
   .card h2 { font-size: 28px; }
-  .card-grip { margin: 0 -18px 12px; padding: 9px 18px 8px; }
+  .card-grip { margin: 0 -18px; padding: 9px 18px 8px; }
+  .spec { margin: 0 -18px 12px; font-size: 9.5px; }
+  .spec span { padding: 6px 8px 5px; }
+  .legend { columns: 1; }
   .index { display: none; }
-  .label .name { font-size: 18px; }
+  .ftag { font-size: 9.5px; }
   .cv-sheet { padding: 28px 20px 28px; }
   .cv h1 { font-size: 40px; }
 }

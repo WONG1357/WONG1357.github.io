@@ -98,17 +98,42 @@ function badge(K) {
   // Both ends of the strap are clipped to the card, so when the card lifts the strap rises
   // with it, most at the clip and fading out along the loop.
   const pull = strap.map(v => Math.max(0, 1 - v.distanceTo(strap[0]) / 1.6) ** 1.5);
+  // At rest the free part of the loop sways a little (idle), the clipped ends stay put.
+  const sway = { t: 0, a: 0 };
   const follow = () => {
     const lift = (holder.position.y - 0.04) / lan.scale.y;
-    const pts = strap.map((v, i) => v.clone().setY(v.y + lift * pull[i]));
-    lan.geometry.dispose();
-    lan.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 120, 0.06, 8);
+    const pts = strap.map((v, i) => {
+      const k = (1 - pull[i]) * sway.a;
+      return new THREE.Vector3(v.x + Math.sin(sway.t * 1.1 + i * 0.8) * 0.06 * k, v.y + lift * pull[i], v.z + Math.cos(sway.t * 0.9 + i * 0.6) * 0.04 * k);
+    });
+    // Same vertex count every time, so the new shape is copied into the existing buffers.
+    const next = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 120, 0.06, 8);
+    const pos = lan.geometry.attributes.position, nor = lan.geometry.attributes.normal;
+    pos.array.set(next.attributes.position.array);
+    nor.array.set(next.attributes.normal.array);
+    next.dispose();
     // The curve can swing below the bench between a raised point and a resting one; keep it on top.
-    const pos = lan.geometry.attributes.position;
     for (let i = 0; i < pos.count; i++) pos.setY(i, Math.max(pos.getY(i), 0.02));
+    pos.needsUpdate = nor.needsUpdate = true;
+    lan.geometry.computeBoundingBox();
+    lan.geometry.computeBoundingSphere();
   };
   return {
     group: g, view: { dir: new THREE.Vector3(0.1, 1.5, 0.75), dist: 6.2, lift: 0.6 },
+    parts: [],
+    labels: [
+      { n: 110, text: 'BSc Biomedical Engineering, PolyU', obj: card, at: [0.25, 0.05, 0.35] },
+      { n: 112, text: 'WGPA 3.47', obj: card, at: [-0.3, 0.05, -0.45] },
+      { n: 114, text: "Dean's Honours List, 2025/26", obj: card, at: [0.3, 0.05, 0.6] },
+      { n: 116, text: 'Secondary major: AI and Data Analytics', obj: card, at: [-0.2, 0.05, 0.9] },
+    ],
+    idle(t, amt) {
+      // The tube is rebuilt about 15 times a second, enough for a slow sway.
+      if (amt === sway.a && amt === 0) return;
+      if (amt > 0 && t - sway.t < 0.066) return;
+      sway.t = t; sway.a = amt;
+      follow();
+    },
     play() {
       return gsap.timeline({ paused: true, onUpdate: follow })
         .to(holder.position, { y: 0.9, duration: 0.45, ease: 'power2.out' })
@@ -122,7 +147,7 @@ function badge(K) {
 function scanner(K) {
   const g = new THREE.Group();
   // Scan monitor
-  let scan = 0, outline = 0;
+  let scan = 0, outline = 0, sweep = -1;
   const speck = [];
   for (let i = 0; i < 1400; i++) speck.push([Math.random(), Math.random(), Math.random()]);
   const screen = canvasTex(640, 400, (x, w, h) => {
@@ -146,6 +171,12 @@ function scanner(K) {
     } else {
       x.strokeStyle = inkCss; x.lineWidth = 1.2;
       for (let k = 0; k < 9; k++) { const r = R0 + (R1 - R0) * k / 8; x.beginPath(); x.arc(cx, cy, r, a0, a1); x.stroke(); }
+      if (sweep >= 0) {
+        // Standby: a faint scan line sweeps the empty sector.
+        const a = a0 + (a1 - a0) * sweep;
+        x.strokeStyle = 'rgba(194,58,48,0.7)'; x.lineWidth = 2.5;
+        x.beginPath(); x.moveTo(cx + Math.cos(a) * R0, cy + Math.sin(a) * R0); x.lineTo(cx + Math.cos(a) * R1, cy + Math.sin(a) * R1); x.stroke();
+      }
     }
     x.restore();
     if (outline > 0) {
@@ -162,7 +193,8 @@ function scanner(K) {
   });
   const mon = new THREE.Group();
   mon.position.set(0, 0, 0);
-  mon.add(K.box(1.8, 0.12, 1.1, '#3b4250', 0, 0.06, 0, 0.05));
+  const base = K.box(1.8, 0.12, 1.1, '#3b4250', 0, 0.06, 0, 0.05);
+  mon.add(base);
   mon.add(K.box(0.3, 1.5, 0.2, '#3b4250', 0, 0.85, -0.2));
   const head = new THREE.Group();
   head.position.set(0, 2.35, -0.1);
@@ -187,8 +219,20 @@ function scanner(K) {
   const st = { s: 0, o: 0 };
   return {
     group: g, view: { dir: new THREE.Vector3(0.05, 0.35, 1), dist: 8.6, lift: 1.4 },
+    parts: [{ obj: head, offset: [0, 0.5, 0.15] }, { obj: probe, offset: [0.2, 0.45, 0.35] }],
+    labels: [
+      { n: 210, text: 'Ultrasound images', obj: body, at: [0, -0.85, 0] },
+      { n: 212, text: 'Attention U-Net and UNet++', obj: head, at: [-1.3, 0.7, 0.15] },
+      { n: 214, text: 'Rectus femoris, vastus medialis', obj: head, at: [0.3, 0.35, 0.15] },
+      { n: 216, text: 'Knee osteoarthritis screening', obj: base, at: [0.7, 0.06, 0.45] },
+    ],
+    idle(t, amt) {
+      probe.rotation.y = -0.5 + Math.sin(t * 0.9) * 0.08 * amt;
+      const sw = amt > 0 ? (t * 0.35) % 1 : -1;
+      if (Math.abs(sw - sweep) > 0.03 || (sw < 0) !== (sweep < 0)) { sweep = sw; screen.redraw(); }
+    },
     play() {
-      return gsap.timeline({ paused: true, onStart: () => { scan = outline = 0; screen.redraw(); } })
+      return gsap.timeline({ paused: true, onStart: () => { scan = outline = 0; sweep = -1; screen.redraw(); } })
         .to(probe.position, { y: 1.0, duration: 0.5, ease: 'power2.out' })
         .to(probe.rotation, { z: 0.1, duration: 0.5, ease: 'power2.inOut' }, '<')
         .to(probe.rotation, { y: -0.2, duration: 0.6, yoyo: true, repeat: 3, ease: 'sine.inOut' })
@@ -257,10 +301,19 @@ function notebook(K) {
   pb.rotation.x = Math.PI / 2; pb.position.set(1.2, -0.004, 0);
   hinge.add(pf, pb);
   g.add(hinge);
-  g.add(K.cyl(0.05, 0.05, 2.2, 8, '#3a3f49', 2.72, 0.05, 0.2).rotateX(Math.PI / 2).rotateZ(0.08));
+  const pen = K.cyl(0.05, 0.05, 2.2, 8, '#3a3f49', 2.72, 0.05, 0.2).rotateX(Math.PI / 2).rotateZ(0.08);
+  g.add(pen);
   g.rotation.y = 0.12;
   return {
     group: g, view: { dir: new THREE.Vector3(0, 1.8, 0.8), dist: 6.4, lift: 0 },
+    parts: [{ obj: hinge, offset: [0, 0.4, 0] }, { obj: pen, offset: [0.3, 0.25, 0] }],
+    labels: [
+      { n: 310, text: 'Muscle features from ultrasound', obj: lp, at: [0.3, 0.7, 0] },
+      { n: 312, text: 'Feature selection', obj: pf, at: [0.2, 0.2, 0] },
+      { n: 314, text: 'Knee osteoarthritis prediction models', obj: rp, at: [0.3, -0.5, 0] },
+      { n: 316, text: 'Image processing, computer vision', obj: pen, at: [0, 0.8, 0] },
+    ],
+    idle(t, amt) { hinge.rotation.z = amt * 0.06 * (0.5 + 0.5 * Math.sin(t * 1.3)); },
     play() {
       return gsap.timeline({ paused: true, onStart: () => { hinge.rotation.z = 0; } })
         .to(hinge.rotation, { z: Math.PI * 0.55, duration: 0.7, ease: 'power2.in' }, 0.4)
@@ -273,7 +326,8 @@ function notebook(K) {
 // ---------- Fig. 4 · Mindplus AI: an eye model that opens into OCT layers ----------
 function eye(K) {
   const g = new THREE.Group();
-  g.add(K.cyl(0.9, 1.0, 0.18, 32, '#3b4250', 0, 0.09, 0));
+  const base = K.cyl(0.9, 1.0, 0.18, 32, '#3b4250', 0, 0.09, 0);
+  g.add(base);
   g.add(K.cyl(0.07, 0.07, 1.4, 12, '#9aa3ad', 0, 0.85, 0));
   const ball = new THREE.Group();
   ball.position.set(0, 2.35, 0);
@@ -309,6 +363,18 @@ function eye(K) {
   });
   return {
     group: g, view: { dir: new THREE.Vector3(-0.35, 0.45, 1), dist: 7.2, lift: 1.8 },
+    parts: [],
+    labels: [
+      { n: 410, text: 'OCT medical images', obj: back, at: [0.55, 0.3, 0.55] },
+      { n: 412, text: 'Deep learning models', obj: layers[1], at: [-0.5, 0, 0] },
+      { n: 414, text: 'Ablation studies, imaging metrics', obj: layers[5], at: [0.6, 0, 0] },
+      { n: 416, text: 'Tuned for accuracy and efficiency', obj: base, at: [0.85, 0.09, 0.2] },
+    ],
+    // The eye follows the pointer while it waits.
+    idle(t, amt, mouse) {
+      ball.rotation.y = mouse.x * 0.45 * amt;
+      ball.rotation.x = mouse.y * 0.25 * amt;
+    },
     play() {
       const tl = gsap.timeline({ paused: true, onStart: () => { frontG.position.set(0, 0, 0); frontG.rotation.set(0, 0, 0); layers.forEach(l => { l.scale.setScalar(0.01); l.position.set(0, 2.35, 0); }); } });
       tl.to(ball.rotation, { y: -0.6, duration: 0.6, ease: 'power2.inOut' })
@@ -370,7 +436,15 @@ function binder(K) {
   stamp.position.set(-0.2, 0, 2.2);
   g.add(stamp);
   return {
-    group: g, view: { dir: new THREE.Vector3(-0.35, 0.9, 1), dist: 6.6, lift: 1.1 },
+    group: g, view: { dir: new THREE.Vector3(-0.35, 0.9, 1), dist: 6.6, lift: 1.45 },
+    parts: [{ obj: binderG, offset: [0, 0.3, -0.1] }, { obj: stamp, offset: [0.15, 0.55, 0.1] }, { obj: sheet, offset: [0, 0.2, 0.1] }],
+    labels: [
+      { n: 510, text: 'Python and Streamlit surveillance platform', obj: lab, at: [0, 0.6, 0] },
+      { n: 512, text: 'FDA MAUDE, TGA DAEN, Health Canada MDI', obj: tabs[2], at: [0, 0, 0] },
+      { n: 514, text: 'Standards changes traced to QMS documents', obj: sheet, at: [0.1, 0.45, 0] },
+      { n: 516, text: 'Amendment suggestions for QA/RA review', obj: stamp, at: [0, 0.95, 0] },
+    ],
+    idle(t, amt) { tabs.forEach((tb, k) => { tb.rotation.x = Math.sin(t * 2.4 + k * 1.3) * 0.12 * amt; }); },
     play() {
       const tl = gsap.timeline({ paused: true, onStart: () => { mark.redraw(false); stamp.position.set(-0.2, 0, 2.2); } });
       tabs.forEach((t, k) => tl.to(t.position, { x: -0.35, duration: 0.18, yoyo: true, repeat: 1, ease: 'power2.out' }, k * 0.15));
@@ -387,7 +461,7 @@ function binder(K) {
 // ---------- Fig. 6 · MediConcepts AI analyst: a laptop running a QMS workflow board ----------
 function laptop(K) {
   const g = new THREE.Group();
-  let grow = 0;
+  let grow = 0, caret = false;
   const screen = canvasTex(560, 360, (x, w, h) => {
     x.fillStyle = '#f7f2e6'; x.fillRect(0, 0, w, h);
     x.fillStyle = inkCss; x.font = `500 18px ${MONO}`; x.fillText('QMS WORKFLOW · AI TOOLS', 22, 36);
@@ -400,9 +474,12 @@ function laptop(K) {
       x.fillStyle = inkCss; x.font = `400 18px ${MONO}`; x.fillText(r, 64, y);
       x.fillStyle = done ? '#5b8fd1' : 'rgba(29,35,51,0.35)'; x.font = `400 14px ${MONO}`; x.fillText(done ? 'AI tool chosen' : 'evaluating', 400, y);
     });
+    x.fillStyle = inkCss; x.font = `400 18px ${MONO}`; x.fillText('>', 22, 340);
+    if (caret) x.fillRect(42, 324, 11, 20);
   });
   g.add(K.box(3.4, 0.14, 2.3, '#b9c0c8', 0, 0.07, 0, 0.05));
-  g.add(K.box(3.0, 0.02, 1.0, '#8d96a0', 0, 0.15, -0.35));
+  const keys = K.box(3.0, 0.02, 1.0, '#8d96a0', 0, 0.15, -0.35);
+  g.add(keys);
   g.add(K.box(1.0, 0.02, 0.6, '#a7afb8', 0, 0.15, 0.65));
   const lid = new THREE.Group();
   lid.position.set(0, 0.14, -1.12);
@@ -416,8 +493,19 @@ function laptop(K) {
   const st = { v: 0 };
   return {
     group: g, view: { dir: new THREE.Vector3(-0.45, 1.1, 1), dist: 6.2, lift: 0.9 },
+    parts: [{ obj: lid, offset: [0, 0.35, -0.15] }, { obj: keys, offset: [0, 0.22, 0] }],
+    labels: [
+      { n: 610, text: 'AI tools for QMS document workflows', obj: disp, at: [0.4, 0.4, 0] },
+      { n: 612, text: 'Evaluating AI models for office tasks', obj: disp, at: [-0.9, -0.55, 0] },
+      { n: 614, text: 'AI in administrative processes', obj: keys, at: [1.1, 0.01, 0.2] },
+    ],
+    // A cursor blinks on the screen while it waits.
+    idle(t, amt) {
+      const on = amt > 0.5 && t % 1.1 < 0.55;
+      if (on !== caret) { caret = on; screen.redraw(); }
+    },
     play() {
-      return gsap.timeline({ paused: true, onStart: () => { grow = 0; screen.redraw(); } })
+      return gsap.timeline({ paused: true, onStart: () => { grow = 0; caret = false; screen.redraw(); } })
         .to(lid.rotation, { x: -1.2, duration: 0.35, ease: 'power2.in' })
         .to(lid.rotation, { x: -1.85 + Math.PI / 2, duration: 0.6, ease: 'back.out(2)' })
         .fromTo(st, { v: 0 }, { v: 1, duration: 1.6, ease: 'power2.inOut', onUpdate: () => { grow = st.v; screen.redraw(); } });
@@ -491,6 +579,20 @@ function eeg(K) {
   const st = { d: 0 };
   return {
     group: g, view: { dir: new THREE.Vector3(0.1, 1.1, 1), dist: 7.4, lift: 0.7 },
+    parts: [{ obj: bell, offset: [0, 0.35, 0.15] }, { obj: reader, offset: [0.15, 0.35, 0] }, { obj: strip, offset: [0, 0.15, 0.2] }],
+    labels: [
+      { n: 710, text: 'EEG headset, event-related potentials', obj: band, at: [0, 0.84, 0] },
+      { n: 712, text: 'Pull-the-stop-button task', obj: btn, at: [0, 0.08, 0] },
+      { n: 714, text: 'Octopus card tap task', obj: card, at: [0, 0.02, 0] },
+      { n: 716, text: 'Memory recall and reaction time', obj: strip, at: [0.9, 0, 0] },
+      { n: 718, text: "Early detection of Alzheimer's", obj: head, at: [0.55, 0.9, 0.35] },
+    ],
+    // The reader's light blinks and the tape ticks along a short trace while it waits.
+    idle(t, amt) {
+      light.uniforms.uGlow.value = amt * (Math.sin(t * 2.2) > 0.75 ? 0.35 : 0);
+      const d = amt > 0 ? 0.3 * ((t * 0.07) % 1) : 0;
+      if (Math.abs(d - drawn) > 0.012 || (d === 0 && drawn !== 0)) { drawn = d; tape.redraw(); }
+    },
     play() {
       return gsap.timeline({ paused: true, onStart: () => { drawn = 0; tape.redraw(); light.uniforms.uGlow.value = 0; } })
         .to(btn.position, { y: 0.47, duration: 0.12, ease: 'power2.in' }, 0.3)
@@ -562,6 +664,18 @@ function walker(K) {
   g.add(sheet);
   return {
     group: g, view: { dir: new THREE.Vector3(-0.4, 0.75, 1), dist: 7.6, lift: 1.0 },
+    parts: [{ obj: sling, offset: [0, 0.2, 0.1] }, ...wheels.map(wh => ({ obj: wh, offset: [Math.sign(wh.position.x) * 0.25, 0, 0] }))],
+    labels: [
+      { n: 810, text: 'Mobility, stability and comfort', obj: w, at: [0.75, 1.56, 0] },
+      { n: 812, text: 'User-centred design', obj: sling, at: [0.35, 0.03, 0] },
+      { n: 814, text: 'Biomechanical principles', obj: wheels[1], at: [0, 0, 0] },
+      { n: 816, text: 'CAD model in SolidWorks', obj: paper, at: [0.6, 0.3, 0] },
+    ],
+    // The walker nudges back and forth on its wheels.
+    idle(t, amt) {
+      w.position.z = Math.sin(t * 0.8) * 0.05 * amt;
+      wheels.forEach(wh => { wh.rotation.x = -w.position.z / 0.22; });
+    },
     play() {
       const tl = gsap.timeline({ paused: true, onStart: () => { w.position.set(0, 0, 0); sheet.scale.y = 1; } });
       tl.to(sheet.scale, { y: 0.05, duration: 0.25, ease: 'power2.in' }, 0)
@@ -596,6 +710,14 @@ export function buildFigures() {
     f.fill = fill;
     f.index = i;
     f.item = CV.items[i];
+    // Each part that flies out in the exploded view gets a wrapper of its own, so the
+    // explosion never fights the figure's own animation for the same position.
+    f.explode = f.parts.map(({ obj, offset }) => {
+      const wrap = new THREE.Group();
+      obj.parent.add(wrap);
+      wrap.add(obj);
+      return { wrap, offset: new THREE.Vector3(...offset) };
+    });
     f.group.traverse(o => { o.userData.fig = i; });
     return f;
   });

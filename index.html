@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="pre">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -25,6 +25,10 @@
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
+<svg class="frame" id="frame" aria-hidden="true"><rect pathLength="1" width="100%" height="100%"/></svg>
+<div class="ftags" id="ftags" aria-hidden="true"></div>
+<svg class="ov" id="ov" aria-hidden="true"></svg>
+<div class="callouts" id="callouts" aria-hidden="true"></div>
 <p class="loading" id="loading" aria-live="polite">Drawing the bench…</p>
 
 <header class="top">
@@ -37,23 +41,25 @@
 </header>
 
 
-<p class="label" id="label" hidden aria-hidden="true"><span class="fig"></span><span class="name"></span></p>
-
 <article class="card" id="card" hidden aria-labelledby="card-title">
   <div class="card-grip" id="card-grip" title="Drag to move · double-click to put back"><span aria-hidden="true">⠿ drag to move</span></div>
+  <p class="spec"><span>Specification</span><span id="spec-fig"></span><span id="spec-sheet"></span></p>
   <p class="kicker" id="card-kicker"></p>
   <h2 id="card-title"></h2>
   <p class="org" id="card-org"></p>
   <p class="dates" id="card-dates"></p>
   <ul class="bullets" id="card-bullets"></ul>
   <ul class="tags" id="card-tags"></ul>
+  <ol class="legend" id="card-legend" aria-label="Reference numerals"></ol>
   <div class="card-actions">
     <button class="btn" id="card-back" type="button">← Back to bench</button>
     <button class="btn btn-ink" id="card-next" type="button">Next figure →</button>
   </div>
+  <span class="roll" aria-hidden="true"></span>
 </article>
 
 <footer class="bottom">
+  <i class="foot-rule" id="foot-rule" aria-hidden="true"></i>
   <section class="title-block" id="title-block" aria-labelledby="title">
     <p class="kicker">Sheet 1 of 9 · The Engineer's Bench</p>
     <h1 id="title">Apparatus for building AI for medical images and medical devices</h1>
