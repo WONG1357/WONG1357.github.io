@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thomas Wong · Intro</title>
+<meta name="description" content="Thomas Wong, Biomedical Engineering × AI at PolyU. Who he is, what he can do, and where he has done it.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect x=%271%27 y=%271%27 width=%2730%27 height=%2730%27 fill=%27%23f4efe2%27 stroke=%27%231d2333%27 stroke-width=%272%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-family=%27Georgia,serif%27 font-size=%2719%27 text-anchor=%27middle%27 fill=%27%231d2333%27%3ETW%3C/text%3E%3C/svg%3E">
+<meta property="og:title" content="Thomas Wong · Intro">
+<meta property="og:description" content="Thomas Wong, Biomedical Engineering × AI at PolyU. Who he is, what he can do, and where he has done it.">
+<meta property="og:image" content="https://wong1357.github.io/og.jpg">
+<meta property="og:url" content="https://wong1357.github.io/intro.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="intro.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./"><span>Thomas Wong</span><small>Biomedical Engineering × AI</small></a>
+  <nav class="nav" aria-label="Pages">
+    <a href="./">Bench</a>
+    <a href="intro.html" class="on" aria-current="page">Intro</a>
+    <button type="button" data-open-cv>CV</button>
+  </nav>
+</header>
+
+<main>
+  <!-- 1 · The badge peels off the page as you scroll. -->
+  <section class="peel" id="peel" aria-label="Staff badge">
+    <div class="peel-stage">
+      <div class="under">
+        <p class="kicker">Sheet 2 · Intro</p>
+        <p class="under-hi">Hello, nice to meet you.</p>
+      </div>
+      <div class="badge-wrap" id="badge-wrap">
+        <div class="badge" id="badge">
+          <div class="badge-band"><span>STUDENT</span><span>Biomedical Engineering</span></div>
+          <div class="badge-body">
+            <svg class="badge-photo" viewBox="0 0 120 150" aria-hidden="true"><rect x="2" y="2" width="116" height="146" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="58" r="26" fill="none" stroke="currentColor" stroke-width="3"/><path d="M14 148c6-34 26-52 46-52s40 18 46 52" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+            <div class="badge-text">
+              <p class="badge-name">Thomas<br>Wong</p>
+              <p class="badge-role">Biomedical Engineering × AI</p>
+              <p class="badge-id">PolyU · Class of 2027</p>
+            </div>
+          </div>
+          <svg class="badge-code" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true" id="barcode"></svg>
+        </div>
+        <div class="flap" id="flap"></div>
+      </div>
+      <p class="scroll-hint" id="scroll-hint">Scroll to peel</p>
+    </div>
+  </section>
+
+  <!-- 2 · Name and headline -->
+  <section class="hello" aria-labelledby="hello-title">
+    <p class="kicker">Fig. A · Name</p>
+    <h1 id="hello-title">Thomas Wong</h1>
+    <p class="headline" id="headline">I build AI for medical images and medical devices.</p>
+    <p class="sub">Biomedical Engineering student at The Hong Kong Polytechnic University, with a secondary major in AI and Data Analytics. I have trained segmentation models on ultrasound, analysed OCT scans, built post-market surveillance tools for medical devices, and designed an EEG-based cognitive assessment device and a walker for children with cerebral palsy.</p>
+  </section>
+
+  <!-- 3 · About folder -->
+  <section class="about reveal" id="about" aria-labelledby="about-title">
+    <div class="folder">
+      <div class="folder-tab">File 01 · About</div>
+      <div class="folder-back"></div>
+      <div class="folder-paper">
+        <h2 id="about-title">About</h2>
+        <dl class="facts">
+          <div><dt>Degree</dt><dd>BSc (Hons) Biomedical Engineering</dd></div>
+          <div><dt>University</dt><dd>The Hong Kong Polytechnic University</dd></div>
+          <div><dt>Secondary major</dt><dd>AI and Data Analytics (AIDA)</dd></div>
+          <div><dt>Graduating</dt><dd>June 2027 (expected)</dd></div>
+          <div><dt>WGPA</dt><dd>3.47</dd></div>
+          <div><dt>Honours</dt><dd>Dean's Honours List, Faculty of Engineering, 2025/26</dd></div>
+          <div><dt>Languages</dt><dd>English, Mandarin, Cantonese</dd></div>
+        </dl>
+      </div>
+      <div class="folder-front"><span>T. WONG</span></div>
+    </div>
+  </section>
+
+  <!-- 4 · Skills diagram -->
+  <section class="skills reveal" id="skills" aria-labelledby="skills-title">
+    <p class="kicker">Fig. B · What I can do, and where I did it</p>
+    <h2 id="skills-title">Skills, wired to the work that used them</h2>
+    <p class="note">Point at a skill to trace its lines.</p>
+    <div class="diagram" id="diagram">
+      <ol class="col skills-col" id="skill-list"></ol>
+      <svg class="wires" id="wires" aria-hidden="true"></svg>
+      <ol class="col jobs-col" id="job-list"></ol>
+    </div>
+  </section>
+
+  <!-- 5 · Experience cards -->
+  <section class="work reveal" aria-labelledby="work-title">
+    <p class="kicker">Fig. C · Experience, education and projects</p>
+    <h2 id="work-title">Eight index cards</h2>
+    <ul class="cards" id="cards"></ul>
+  </section>
+
+  <!-- 6 · Contact -->
+  <section class="contact reveal" aria-labelledby="contact-title">
+    <p class="kicker">Fig. D · Contact</p>
+    <h2 id="contact-title">If you are building AI for medical images or medical devices, I would like to hear about it.</h2>
+    <p class="mail"><a href="mailto:wychyj5547@gmail.com" id="mail">wychyj5547@gmail.com</a><button class="copy" id="copy" type="button">Copy</button></p>
+    <p class="links"><a href="https://github.com/WONG1357" target="_blank" rel="noopener">github.com/WONG1357 ↗</a><a href="./">Back to the bench →</a></p>
+  </section>
+</main>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
+  <button class="sheet-close" id="sheet-close" type="button">Close</button>
+  <p class="kicker" id="sheet-kicker"></p>
+  <h2 id="sheet-title"></h2>
+  <p class="org" id="sheet-org"></p>
+  <p class="dates" id="sheet-dates"></p>
+  <ul class="bullets" id="sheet-bullets"></ul>
+  <ul class="tags" id="sheet-tags"></ul>
+  <a class="btn" id="sheet-bench" href="./">See it on the bench →</a>
+</dialog>
+
+<dialog class="cv" id="cv" aria-labelledby="cv-name">
+  <div class="cv-sheet">
+    <button class="cv-close" id="cv-close" type="button">Close</button>
+    <div id="cv-body"></div>
+  </div>
+</dialog>
+
+<script type="module" src="js/intro.js"></script>
+</body>
+</html>
