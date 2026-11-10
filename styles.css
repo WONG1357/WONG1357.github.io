@@ -32,7 +32,8 @@ a { color: inherit; }
 
 .top { position: fixed; top: 22px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 5; pointer-events: none; }
 .top > * { pointer-events: auto; }
-.brand { text-decoration: none; display: grid; gap: 2px; }
+/* A paper patch behind the name, so drawing lines passing under it never tangle with the lettering. */
+.brand { text-decoration: none; display: grid; gap: 2px; margin: -6px -10px; padding: 6px 10px; background: rgba(244, 239, 226, .88); }
 .brand span { font-family: var(--serif); font-size: 30px; line-height: 1; }
 .brand small { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
 .nav { display: flex; border: 1.5px solid var(--ink); background: var(--paper-hi); }

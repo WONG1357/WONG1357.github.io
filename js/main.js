@@ -71,7 +71,8 @@ overview();
 const box = new THREE.Box3(), centre = new THREE.Vector3();
 function framing(f) {
   box.setFromObject(f.group).getCenter(centre);
-  const look = new THREE.Vector3(centre.x, f.view.lift, centre.z);
+  // "pan" slides the aim sideways for figures whose moment spreads out to one side.
+  const look = new THREE.Vector3(centre.x + (f.view.pan || 0), f.view.lift, centre.z);
   // Far enough back that the exploded parts and their reference numerals fit round the figure.
   const pos = look.clone().addScaledVector(f.view.dir.clone().normalize(), f.view.dist * (phone ? 1.7 : 1.5));
   return { pos, look };
@@ -380,19 +381,19 @@ function layoutCallouts() {
     });
     co.cols = ['L', 'R'].map(sd => items.filter(it => it.side === sd).sort((a, b) => a.ay - b.ay));
   }
-  // Each column keeps its labels near their parts, 10px apart, between the header and the footer or card.
+  // Each column keeps its labels near their parts, 16px apart, between the header and the footer or card.
   for (const col of co.cols) {
     let prev = -1e9;
-    col.forEach(it => { it.ty = Math.max(clamp(it.ay - 9, top, bottom - it.h), prev + 10); prev = it.ty + it.h; });
+    col.forEach(it => { it.ty = Math.max(clamp(it.ay - 9, top, bottom - it.h), prev + 16); prev = it.ty + it.h; });
     let lim = bottom;
-    for (let i = col.length - 1; i >= 0; i--) { col[i].ty = Math.min(col[i].ty, lim - col[i].h); lim = col[i].ty - 10; }
+    for (let i = col.length - 1; i >= 0; i--) { col[i].ty = Math.min(col[i].ty, lim - col[i].h); lim = col[i].ty - 16; }
   }
   items.forEach(it => {
     const tx = clamp(it.side === 'L' ? Lx - it.w : Rx, lo, hi - it.w);
     it.x = it.x == null ? tx : it.x + (tx - it.x) * 0.2;
     it.y = it.y == null ? it.ty : it.y + (it.ty - it.y) * 0.2;
     it.e.style.translate = `${it.x.toFixed(1)}px ${it.y.toFixed(1)}px`;
-    const ex = it.side === 'L' ? it.x + it.w + 6 : it.x - 6, ey = it.y + 9;
+    const ex = it.side === 'L' ? it.x + it.w + 8 : it.x - 8, ey = it.y + 8;
     it.path.setAttribute('d', `M${it.ax} ${it.ay}Q${(it.ax + ex) / 2} ${it.ay} ${ex} ${ey}`);
     it.dot.setAttribute('cx', it.ax);
     it.dot.setAttribute('cy', it.ay);
@@ -494,9 +495,9 @@ renderer.setAnimationLoop(() => {
   }
   off.x += (tx - off.x) * ease;
   off.y += (ty - off.y) * ease;
-  // In the overview, lift the bench clear of the footer strip.
+  // Lift the view clear of the footer strip, in the overview and on an open figure alike.
   footH = document.querySelector('.bottom').offsetHeight;
-  const up = phone ? 0 : (1 - shift) * footH * 0.45;
+  const up = phone ? 0 : footH * 0.45;
   camera.setViewOffset(w, h, off.x, off.y + up, w, h);
   camera.updateMatrixWorld();
 

@@ -218,7 +218,7 @@ function scanner(K) {
   g.add(cable);
   const st = { s: 0, o: 0 };
   return {
-    group: g, view: { dir: new THREE.Vector3(0.05, 0.35, 1), dist: 8.6, lift: 1.4 },
+    group: g, view: { dir: new THREE.Vector3(0.05, 0.35, 1), dist: 8.6, lift: 1.8 },
     parts: [{ obj: head, offset: [0, 0.5, 0.15] }, { obj: probe, offset: [0.2, 0.45, 0.35] }],
     labels: [
       { n: 210, text: 'Ultrasound images', obj: body, at: [0, -0.85, 0] },
@@ -284,6 +284,19 @@ function notebook(K) {
     x.strokeStyle = inkCss; x.setLineDash([6, 6]); x.lineWidth = 1.5; x.beginPath(); x.moveTo(70, 330); x.lineTo(350, 90); x.stroke(); x.setLineDash([]);
     x.font = hand(24); x.fillText('ROC', 300, 120); x.fillText('early diagnosis :)', 62, 400);
   });
+  // The back of the page that turns: what went into the dataset before any model.
+  // It is seen after a half turn about the spine, so it is drawn upside down.
+  const prep = canvasTex(400, 560, (x, w, h) => {
+    x.save(); x.translate(w, h); x.rotate(Math.PI);
+    lined(x, w, h);
+    x.font = hand(30); x.fillText('Dataset prep', 62, 44);
+    x.font = hand(27);
+    ['preprocess the scans', 'muscle features', 'feature selection', 'evaluate the model'].forEach((r, k) => { x.fillText('✓  ' + r, 62, 104 + k * 42); });
+    x.lineWidth = 2; x.strokeRect(62, 300, 150, 110);
+    x.beginPath(); x.ellipse(137, 345, 55, 20, 0.1, 0, Math.PI * 2); x.stroke();
+    x.font = hand(24); x.fillText('morphology + texture', 62, 450);
+    x.restore();
+  });
   const cover = '#2f5d8a';
   g.add(K.box(4.9, 0.08, 3.4, cover, 0, 0.04, 0, 0.03));
   const left = K.box(2.3, 0.14, 3.2, '#f6f1e5', -1.2, 0.15, 0);
@@ -292,12 +305,12 @@ function notebook(K) {
   const lp = K.plane(2.25, 3.15, '#ffffff', { map: scans.tex, mapColour: 0.2 }); lp.rotation.x = -Math.PI / 2; lp.position.set(-1.2, 0.225, 0);
   const rp = K.plane(2.25, 3.15, '#ffffff', { map: chart.tex, mapColour: 0.2 }); rp.rotation.x = -Math.PI / 2; rp.position.set(1.2, 0.225, 0);
   g.add(lp, rp);
-  // The page that turns: features on its front, a blank back.
+  // The page that turns: features on its front, the dataset notes on its back.
   const hinge = new THREE.Group();
   hinge.position.set(0, 0.235, 0);
   const pf = K.plane(2.25, 3.15, '#ffffff', { map: features.tex, mapColour: 0.2 });
   pf.rotation.x = -Math.PI / 2; pf.position.x = 1.2;
-  const pb = K.plane(2.25, 3.15, '#f6f1e5');
+  const pb = K.plane(2.25, 3.15, '#ffffff', { map: prep.tex, mapColour: 0.2 });
   pb.rotation.x = Math.PI / 2; pb.position.set(1.2, -0.004, 0);
   hinge.add(pf, pb);
   g.add(hinge);
@@ -305,10 +318,10 @@ function notebook(K) {
   g.add(pen);
   g.rotation.y = 0.12;
   return {
-    group: g, view: { dir: new THREE.Vector3(0, 1.8, 0.8), dist: 6.4, lift: 0 },
+    group: g, view: { dir: new THREE.Vector3(0, 1.8, 0.8), dist: 7.6, lift: 0 },
     parts: [{ obj: hinge, offset: [0, 0.4, 0] }, { obj: pen, offset: [0.3, 0.25, 0] }],
     labels: [
-      { n: 310, text: 'Muscle features from ultrasound', obj: lp, at: [0.3, 0.7, 0] },
+      { n: 310, text: 'Muscle features from ultrasound', obj: pb, at: [0.3, 0.75, 0] },
       { n: 312, text: 'Feature selection', obj: pf, at: [0.2, 0.2, 0] },
       { n: 314, text: 'Knee osteoarthritis prediction models', obj: rp, at: [0.3, -0.5, 0] },
       { n: 316, text: 'Image processing, computer vision', obj: pen, at: [0, 0.8, 0] },
@@ -362,7 +375,7 @@ function eye(K) {
     return m;
   });
   return {
-    group: g, view: { dir: new THREE.Vector3(-0.35, 0.45, 1), dist: 7.2, lift: 1.8 },
+    group: g, view: { dir: new THREE.Vector3(-0.35, 0.45, 1), dist: 8.2, lift: 2.0, pan: -0.9 },
     parts: [],
     labels: [
       { n: 410, text: 'OCT medical images', obj: back, at: [0.55, 0.3, 0.55] },
@@ -492,7 +505,7 @@ function laptop(K) {
   g.rotation.y = 0.35;
   const st = { v: 0 };
   return {
-    group: g, view: { dir: new THREE.Vector3(-0.45, 1.1, 1), dist: 6.2, lift: 0.9 },
+    group: g, view: { dir: new THREE.Vector3(-0.45, 1.1, 1), dist: 7.6, lift: 0.9, pan: -0.7 },
     parts: [{ obj: lid, offset: [0, 0.35, -0.15] }, { obj: keys, offset: [0, 0.22, 0] }],
     labels: [
       { n: 610, text: 'AI tools for QMS document workflows', obj: disp, at: [0.4, 0.4, 0] },
@@ -663,7 +676,7 @@ function walker(K) {
   sheet.rotation.x = -0.02;
   g.add(sheet);
   return {
-    group: g, view: { dir: new THREE.Vector3(-0.4, 0.75, 1), dist: 7.6, lift: 1.0 },
+    group: g, view: { dir: new THREE.Vector3(-0.4, 0.6, 1), dist: 8.0, lift: 2.6 },
     parts: [{ obj: sling, offset: [0, 0.2, 0.1] }, ...wheels.map(wh => ({ obj: wh, offset: [Math.sign(wh.position.x) * 0.25, 0, 0] }))],
     labels: [
       { n: 810, text: 'Mobility, stability and comfort', obj: w, at: [0.75, 1.56, 0] },
